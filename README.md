@@ -134,31 +134,48 @@ GET /api/v1/payments?status=APPROVED&page=0   → 필터 + 페이징
 
 ## ⚙️ 실행 방법
 
-### 1. Redis 실행 (Docker)
+### 방법 1. Docker Compose (권장)
+
+```bash
+# .env 파일 생성
+cp .env.example .env  # 또는 직접 생성
+
+# 전체 실행 (MySQL + Redis + App)
+docker-compose up --build
+
+# 백그라운드 실행
+docker-compose up -d --build
+
+# 종료
+docker-compose down
+```
+
+### 방법 2. 로컬 직접 실행
+
+**1. Redis 실행**
 ```bash
 docker run -d --name payment-redis -p 6379:6379 redis:7
 ```
 
-### 2. MySQL 데이터베이스 생성
+**2. MySQL 데이터베이스 생성**
 ```sql
 CREATE DATABASE payment_db;
 ```
 
-### 3. application.yaml 설정
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/payment_db
-    username: root
-    password: {비밀번호}
+**3. .env 파일 생성**
+```
+DB_USERNAME=root
+DB_PASSWORD=비밀번호
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
-### 4. 실행
+**4. 실행**
 ```bash
 ./gradlew bootRun
 ```
 
-### 5. Swagger UI 접속
+### Swagger UI 접속
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
