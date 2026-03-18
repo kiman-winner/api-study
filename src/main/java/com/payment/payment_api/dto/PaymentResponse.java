@@ -3,11 +3,14 @@ package com.payment.payment_api.dto;
 import com.payment.payment_api.entity.Payment;
 import com.payment.payment_api.enums.PaymentStatus;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
-public class PaymentResponse {
+@NoArgsConstructor
+public class PaymentResponse implements Serializable {
 
     private Long id;
     private String orderId;

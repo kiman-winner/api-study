@@ -7,6 +7,8 @@ import com.payment.payment_api.entity.Payment;
 import com.payment.payment_api.enums.PaymentStatus;
 import com.payment.payment_api.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,7 @@ public class PaymentService {
     }
 
     // 결제 취소
+    @CacheEvict(value = "payment", key = "#id")
     @Transactional
     public PaymentResponse cancelPayment(Long id) {
         Payment payment = paymentRepository.findById(id)
@@ -59,6 +62,7 @@ public class PaymentService {
     }
 
     // 결제 단건 조회
+    @Cacheable(value = "payment", key = "#id")
     @Transactional(readOnly = true)
     public PaymentResponse getPayment(Long id) {
         Payment payment = paymentRepository.findById(id)
