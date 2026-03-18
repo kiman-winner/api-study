@@ -1,11 +1,13 @@
 package com.payment.payment_api.service;
 
+import com.payment.payment_api.dto.PaymentPageResponse;
 import com.payment.payment_api.dto.PaymentRequest;
 import com.payment.payment_api.dto.PaymentResponse;
 import com.payment.payment_api.entity.Payment;
 import com.payment.payment_api.enums.PaymentStatus;
 import com.payment.payment_api.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +22,6 @@ public class PaymentService {
     // 결제 요청
     @Transactional
     public PaymentResponse requestPayment(PaymentRequest request) {
-        // 중복 결제 방지
         if (paymentRepository.existsByOrderId(request.getOrderId())) {
             throw new IllegalStateException("이미 처리된 주문입니다: " + request.getOrderId());
         }
@@ -31,7 +32,6 @@ public class PaymentService {
                 .amount(request.getAmount())
                 .build();
 
-        // Mock PG사 승인 처리
         try {
             String pgTransactionId = mockPgApprove(payment);
             payment.approve(pgTransactionId);
@@ -58,12 +58,27 @@ public class PaymentService {
         return new PaymentResponse(payment);
     }
 
-    // 결제 조회
+    // 결제 단건 조회
     @Transactional(readOnly = true)
     public PaymentResponse getPayment(Long id) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다: " + id));
         return new PaymentResponse(payment);
+    }
+
+    // 결제 목록 조회 (페이징)
+    @Transactional(readOnly = true)
+    public PaymentPageResponse getPayments(PaymentStatus status, Pageable pageable) {
+        if (status != null) {
+            return PaymentPageResponse.of(
+                    paymentRepository.findByStatus(status, pageable)
+                            .map(PaymentResponse::new)
+            );
+        }
+        return PaymentPageResponse.of(
+                paymentRepository.findAll(pageable)
+                        .map(PaymentResponse::new)
+        );
     }
 
     // Mock PG사 승인 (실제 PG 연동 대신 UUID 발급)
