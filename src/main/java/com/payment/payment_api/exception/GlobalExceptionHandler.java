@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "입력값 오류", errors.toString()));
+                .body(ErrorResponse.of("INVALID_INPUT", "입력값 오류", errors.toString()));
     }
 
     // 중복 결제 / 상태 오류 (IllegalStateException)
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage(), null));
+                .body(ErrorResponse.of("CONFLICT", e.getMessage(), null));
     }
 
     // 결제 정보 없음 (IllegalArgumentException)
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+                .body(ErrorResponse.of("NOT_FOUND", e.getMessage(), null));
     }
 
     // PG사 승인 실패 (RuntimeException)
@@ -49,11 +49,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null));
+                .body(ErrorResponse.of("INTERNAL_ERROR", e.getMessage(), null));
     }
 
-    // 에러 응답 DTO
-    public record ErrorResponse(int status, String message, String detail) {
-        private static final LocalDateTime timestamp = LocalDateTime.now();
+    public record ErrorResponse(
+            String code,
+            String message,
+            String detail,
+            LocalDateTime timestamp
+    ) {
+        public static ErrorResponse of(String code, String message, String detail) {
+            return new ErrorResponse(code, message, detail, LocalDateTime.now());
+        }
     }
 }
