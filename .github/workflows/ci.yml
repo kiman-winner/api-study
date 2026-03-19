@@ -41,8 +41,8 @@ jobs:
       - name: 테스트 실행
         run: ./gradlew test
         env:
-          DB_USERNAME: root
-          DB_PASSWORD: 1234
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          JWT_SECRET: payment-api-secret-key-must-be-at-least-32-characters
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
