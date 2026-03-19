@@ -1,6 +1,6 @@
 # 💳 간편결제 API (Payment API)
 
-![CI](https://github.com/kiman-winner/api-study/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/kiman-winner/payment-api/actions/workflows/ci.yml/badge.svg)
 
 PG사 연동 방식의 간편결제 흐름을 구현한 백엔드 API 프로젝트입니다.
 JWT 인증, Redis 캐싱, 페이징 조회, Docker 컨테이너화를 포함합니다.
