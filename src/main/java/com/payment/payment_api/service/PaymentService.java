@@ -3,8 +3,10 @@ package com.payment.payment_api.service;
 import com.payment.payment_api.dto.PaymentPageResponse;
 import com.payment.payment_api.dto.PaymentRequest;
 import com.payment.payment_api.dto.PaymentResponse;
+import com.payment.payment_api.dto.PaymentSearchCondition;
 import com.payment.payment_api.entity.Payment;
 import com.payment.payment_api.enums.PaymentStatus;
+import com.payment.payment_api.repository.PaymentQueryRepository;
 import com.payment.payment_api.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentQueryRepository paymentQueryRepository;
 
     // 결제 요청
     @Transactional
@@ -81,6 +84,15 @@ public class PaymentService {
         }
         return PaymentPageResponse.of(
                 paymentRepository.findAll(pageable)
+                        .map(PaymentResponse::new)
+        );
+    }
+
+    // 결제 검색 (QueryDSL)
+    @Transactional(readOnly = true)
+    public PaymentPageResponse searchPayments(PaymentSearchCondition condition, Pageable pageable) {
+        return PaymentPageResponse.of(
+                paymentQueryRepository.search(condition, pageable)
                         .map(PaymentResponse::new)
         );
     }

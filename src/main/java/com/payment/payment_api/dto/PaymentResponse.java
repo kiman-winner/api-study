@@ -2,6 +2,7 @@ package com.payment.payment_api.dto;
 
 import com.payment.payment_api.entity.Payment;
 import com.payment.payment_api.enums.PaymentStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,7 +19,11 @@ public class PaymentResponse implements Serializable {
     private Long amount;
     private PaymentStatus status;
     private String pgTransactionId;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
     public PaymentResponse(Payment payment) {

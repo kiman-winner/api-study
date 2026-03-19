@@ -3,6 +3,7 @@ package com.payment.payment_api.controller;
 import com.payment.payment_api.dto.PaymentPageResponse;
 import com.payment.payment_api.dto.PaymentRequest;
 import com.payment.payment_api.dto.PaymentResponse;
+import com.payment.payment_api.dto.PaymentSearchCondition;
 import com.payment.payment_api.enums.PaymentStatus;
 import com.payment.payment_api.service.PaymentService;
 import jakarta.validation.Valid;
@@ -41,6 +42,17 @@ public class PaymentController {
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(paymentService.getPayments(status, pageable));
+    }
+
+    // 결제 검색 (QueryDSL)
+    @GetMapping("/search")
+    public ResponseEntity<PaymentPageResponse> searchPayments(
+            @ModelAttribute PaymentSearchCondition condition,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(paymentService.searchPayments(condition, pageable));
     }
 
     // 결제 조회
