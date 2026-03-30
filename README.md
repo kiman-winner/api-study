@@ -60,6 +60,8 @@ FAILED (결제 실패)
 
 ```
 src/main/java/com/payment/payment_api
+├── client
+│   └── PgClient.java  # PG Client Mock
 ├── config
 │   ├── QueryDslConfig.java           # QueryDSL 설정
 │   ├── RedisConfig.java              # Redis 캐시 설정
@@ -90,6 +92,9 @@ src/main/java/com/payment/payment_api
 │   └── PaymentSearchCondition.java   # 결제 검색 조건 DTO
 ├── enums
 │   └── PaymentStatus.java            # 결제 상태 Enum
+├── event
+│   ├── PaymentFailedEvent.java              # 결제 실패 이벤트
+│   └── PaymentFailedListener.java           # 결제 실패 리스너
 └── exception
     └── GlobalExceptionHandler.java   # 전역 예외 처리
 ```
@@ -255,3 +260,9 @@ H2 인메모리 DB + MockMvc로 전체 흐름 검증
 - 토큰 없이 요청 시 401
 - 중복 결제 시 409
 - 금액 유효성 실패 시 400
+
+## ⚠️ 운영 환경 고려사항
+- **PG 연동**: Mock PG 클라이언트를 실제 PG사 API로 대체, 콜백(webhook) 기반 비동기 승인 처리 필요
+- **결제 실패 이력**: PG 승인 실패 시 FAILED 상태는 `@TransactionalEventListener(AFTER_ROLLBACK)` + `REQUIRES_NEW` 조합으로 메인 트랜잭션 롤백 후 별도 트랜잭션에서 저장 처리
+- **정산 대사**: `balance` 이력 합계 정합성 검증하는 배치 기반 대사 로직 필요
+- **PG 장애 대응**: 네트워크 타임아웃 시 재시도 전략 및 보상 트랜잭션 고려 필요
