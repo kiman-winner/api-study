@@ -3,8 +3,6 @@ package com.payment.payment_api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.payment.payment_api.dto.LoginRequest;
 import com.payment.payment_api.dto.PaymentRequest;
-import com.payment.payment_api.repository.MemberRepository;
-import com.payment.payment_api.repository.PaymentRepository;
 import com.payment.payment_api.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,14 +16,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 @ActiveProfiles("test")
-class PaymentControllerIntegrationTest {
+class PaymentControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,12 +34,6 @@ class PaymentControllerIntegrationTest {
 
     @Autowired
     private AuthService authService;
-
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
 
     private String accessToken;
 
@@ -68,7 +61,7 @@ class PaymentControllerIntegrationTest {
     void requestPayment_success() throws Exception {
         PaymentRequest request = new PaymentRequest();
         setField(request, "orderId", "ORDER-TEST-001");
-        setField(request, "customerName", "최동민");
+        setField(request, "customerName", "홍길동");
         setField(request, "amount", 10000L);
 
         mockMvc.perform(post("/api/v1/payments")
@@ -86,7 +79,7 @@ class PaymentControllerIntegrationTest {
     void requestPayment_withoutToken_401() throws Exception {
         PaymentRequest request = new PaymentRequest();
         setField(request, "orderId", "ORDER-TEST-002");
-        setField(request, "customerName", "최동민");
+        setField(request, "customerName", "홍길동");
         setField(request, "amount", 10000L);
 
         mockMvc.perform(post("/api/v1/payments")
@@ -100,7 +93,7 @@ class PaymentControllerIntegrationTest {
     void requestPayment_duplicate_409() throws Exception {
         PaymentRequest request = new PaymentRequest();
         setField(request, "orderId", "ORDER-TEST-003");
-        setField(request, "customerName", "최동민");
+        setField(request, "customerName", "홍길동");
         setField(request, "amount", 10000L);
 
         // 첫 번째 결제
@@ -124,7 +117,7 @@ class PaymentControllerIntegrationTest {
     void requestPayment_invalidAmount_400() throws Exception {
         PaymentRequest request = new PaymentRequest();
         setField(request, "orderId", "ORDER-TEST-004");
-        setField(request, "customerName", "최동민");
+        setField(request, "customerName", "홍길동");
         setField(request, "amount", 50L);  // 100원 미만
 
         mockMvc.perform(post("/api/v1/payments")

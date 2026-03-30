@@ -1,5 +1,6 @@
 package com.payment.payment_api.service;
 
+import com.payment.payment_api.client.PgClient;
 import com.payment.payment_api.dto.PaymentRequest;
 import com.payment.payment_api.dto.PaymentResponse;
 import com.payment.payment_api.entity.Payment;
@@ -15,8 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -31,11 +33,14 @@ class PaymentServiceTest {
 
     private PaymentRequest paymentRequest;
 
+    @Mock
+    private PgClient pgClient;
+
     @BeforeEach
     void setUp() {
         paymentRequest = new PaymentRequest();
         setField(paymentRequest, "orderId", "ORDER-001");
-        setField(paymentRequest, "customerName", "최동민");
+        setField(paymentRequest, "customerName", "홍길동");
         setField(paymentRequest, "amount", 10000L);
     }
 
@@ -45,6 +50,7 @@ class PaymentServiceTest {
         // given
         given(paymentRepository.existsByOrderId("ORDER-001")).willReturn(false);
         given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(pgClient.approve(anyString(), anyLong())).willReturn("PG-MOCK-001");
 
         // when
         PaymentResponse response = paymentService.requestPayment(paymentRequest);
@@ -74,7 +80,7 @@ class PaymentServiceTest {
         // given
         Payment payment = Payment.builder()
                 .orderId("ORDER-001")
-                .customerName("최동민")
+                .customerName("홍길동")
                 .amount(10000L)
                 .build();
         payment.approve("PG-ABCD1234");
@@ -94,7 +100,7 @@ class PaymentServiceTest {
         // given
         Payment payment = Payment.builder()
                 .orderId("ORDER-001")
-                .customerName("최동민")
+                .customerName("홍길동")
                 .amount(10000L)
                 .build();
         // PENDING 상태 그대로
@@ -113,7 +119,7 @@ class PaymentServiceTest {
         // given
         Payment payment = Payment.builder()
                 .orderId("ORDER-001")
-                .customerName("최동민")
+                .customerName("홍길동")
                 .amount(10000L)
                 .build();
         payment.approve("PG-ABCD1234");

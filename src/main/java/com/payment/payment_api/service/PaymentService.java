@@ -1,16 +1,19 @@
 package com.payment.payment_api.service;
 
+import com.payment.payment_api.client.PgClient;
 import com.payment.payment_api.dto.PaymentPageResponse;
 import com.payment.payment_api.dto.PaymentRequest;
 import com.payment.payment_api.dto.PaymentResponse;
 import com.payment.payment_api.dto.PaymentSearchCondition;
 import com.payment.payment_api.entity.Payment;
 import com.payment.payment_api.enums.PaymentStatus;
+import com.payment.payment_api.event.PaymentFailedEvent;
 import com.payment.payment_api.repository.PaymentQueryRepository;
 import com.payment.payment_api.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,8 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final PaymentQueryRepository paymentQueryRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final PgClient pgClient;
 
     // 결제 요청
     @Transactional
@@ -38,11 +43,11 @@ public class PaymentService {
                 .build();
 
         try {
-            String pgTransactionId = mockPgApprove(payment);
+            String pgTransactionId = pgClient.approve(payment.getOrderId(), payment.getAmount());
             payment.approve(pgTransactionId);
         } catch (Exception e) {
-            payment.fail();
-            paymentRepository.save(payment);
+            applicationEventPublisher.publishEvent(
+                    new PaymentFailedEvent(request.getOrderId(), request.getCustomerName(), request.getAmount(), e.getMessage()));
             throw new RuntimeException("PG사 승인 실패: " + e.getMessage());
         }
 
@@ -95,10 +100,5 @@ public class PaymentService {
                 paymentQueryRepository.search(condition, pageable)
                         .map(PaymentResponse::new)
         );
-    }
-
-    // Mock PG사 승인 (실제 PG 연동 대신 UUID 발급)
-    private String mockPgApprove(Payment payment) {
-        return "PG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

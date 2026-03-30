@@ -38,6 +38,8 @@ public class Payment {
 
     private LocalDateTime updatedAt;
 
+    private String failureReason;  // Mock PG사 트랜잭션 ID
+
     @Builder
     public Payment(String orderId, String customerName, Long amount) {
         this.orderId = orderId;
@@ -59,8 +61,9 @@ public class Payment {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void fail() {
+    public void fail(String reason) {
         this.status = PaymentStatus.FAILED;
         this.updatedAt = LocalDateTime.now();
+        this.failureReason = reason;
     }
 }
