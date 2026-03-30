@@ -254,12 +254,15 @@ Mockito 기반으로 DB 없이 비즈니스 로직만 검증
 - 결제 취소 성공/실패
 - 결제 조회 성공/실패
 
-### 통합 테스트 (PaymentControllerIntegrationTest)
+### 통합 테스트 (PaymentControllerIT)
 H2 인메모리 DB + MockMvc로 전체 흐름 검증
 - 결제 요청 성공 (JWT 인증 포함)
 - 토큰 없이 요청 시 401
 - 중복 결제 시 409
 - 금액 유효성 실패 시 400
+
+### 통합 테스트 - 실패 케이스 (PaymentControllerFailedIT)
+PG 예외 발생 시 FAILED 상태 저장 확인 (AFTER_ROLLBACK 이벤트 리스너)
 
 ## ⚠️ 운영 환경 고려사항
 - **PG 연동**: Mock PG 클라이언트를 실제 PG사 API로 대체, 콜백(webhook) 기반 비동기 승인 처리 필요
